@@ -17,6 +17,12 @@ public class DisplayManager : MonoBehaviour {
 
     public GameObject PlayerPrefab;
 
+    public Dropdown dropdownMazeAlgorithm;
+
+    public Slider slider;
+
+    public enum MazeAlgorithm { prims, kruskals };
+
     void Start() {
         
     }
@@ -40,7 +46,16 @@ public class DisplayManager : MonoBehaviour {
     }
 
     public void doRestart() {
-        mazemanager.setupMazePrims();
+        setMaxDelay(slider);
+        mazemanager.mazealgorithm = getMazeAlgorithm();
+
+        if (mazemanager.mazealgorithm == MazeAlgorithm.prims) {
+            mazemanager.setupMazePrims();
+        } else if (mazemanager.mazealgorithm == MazeAlgorithm.kruskals) {
+            mazemanager.setupMazeKruskals();
+        }
+
+
     }
 
     public void toggleCamera() {
@@ -69,6 +84,26 @@ public class DisplayManager : MonoBehaviour {
         Instantiate(PlayerPrefab, new Vector3(0f, 1f, 0f), Quaternion.identity);
 
 
+    }
+
+    public MazeAlgorithm getMazeAlgorithm() {
+        MazeAlgorithm mazealgorithm;
+
+        switch(dropdownMazeAlgorithm.value) {
+            case 0:
+                mazealgorithm = MazeAlgorithm.prims;
+                break;
+            case 1:
+                mazealgorithm = MazeAlgorithm.kruskals;
+                break;
+            default:
+                mazealgorithm = MazeAlgorithm.prims;
+                break;
+        }
+
+
+
+        return mazealgorithm;
     }
 
 

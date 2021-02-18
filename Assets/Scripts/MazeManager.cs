@@ -6,8 +6,8 @@ using UnityEngine.UI;
 
 public class MazeManager : MonoBehaviour {
 
-    const int MAZE_ROWS = 16;
-    const int MAZE_COLS = 16;
+    public const int MAZE_ROWS = 16;
+    public const int MAZE_COLS = 16;
 
     public GameObject CellPrefab;
     public GameObject WallPrefab;
@@ -17,7 +17,9 @@ public class MazeManager : MonoBehaviour {
     List<Wall> walls;
 
     List<Cell> mazeCells;
-    List<Cell> frontierCells;
+    List<Cell> frontierCells; //for Prim's
+
+    List<Wall> kruskalsWalls;
 
     public GameObject CellParent;
     public GameObject WallParent;
@@ -32,10 +34,12 @@ public class MazeManager : MonoBehaviour {
 
     public DisplayManager displaymanager;
 
+    public DisplayManager.MazeAlgorithm mazealgorithm;
+
 
     void Start() {
-        setupMazePrims();
-        fDelay = fMaxDelay;
+//        setupMazePrims();
+//        fDelay = fMaxDelay;
         
     }
 
@@ -46,7 +50,11 @@ public class MazeManager : MonoBehaviour {
                 fDelay -= Time.deltaTime;
                 if (fDelay <= 0f) {
                     //do something
-                    createMazePrimsSelectFrontier();
+                    if (mazealgorithm == DisplayManager.MazeAlgorithm.prims) {
+                        createMazePrimsSelectFrontier();
+                    } else if (mazealgorithm == DisplayManager.MazeAlgorithm.kruskals) {
+                        createMazeKruskalsSelectWall();
+                    }
                     fDelay += fMaxDelay;
                 }
             }
@@ -54,7 +62,7 @@ public class MazeManager : MonoBehaviour {
         
     }
 
-    public void setupMazePrims() {
+    public void setupCellsAndWalls() {
         isFinished = false;
 
         clearMaze();
@@ -65,8 +73,20 @@ public class MazeManager : MonoBehaviour {
         walls = new List<Wall>();
         setupWalls();
 
-        createMazePrims();
         fDelay = fMaxDelay;
+
+    }
+    public void setupMazePrims() {
+        setupCellsAndWalls();
+
+        createMazePrims();
+    }
+
+    public void setupMazeKruskals() {
+        setupCellsAndWalls();
+
+        createMazeKruskals();
+
     }
 
     private void clearMaze() {
@@ -89,46 +109,13 @@ public class MazeManager : MonoBehaviour {
             for (j = 0; j < MAZE_COLS; j++) {
                 Cell cell = Instantiate(CellPrefab, new Vector3(j, 0f, i), Quaternion.identity).GetComponent<Cell>();
                 cell.setup(i, j, this);
-                /*
-                cell.iRow = i;
-                cell.iCol = j;
-                cell.mazemanager = this;
-                */
                 cell.transform.SetParent(CellParent.transform);
 
                 cells.Add(cell);
             }
         }
 
-        //setupNeighbors();
     }
-    /*
-    private void setupNeighbors() {
-        foreach (Cell cell in cells) {
-            Cell cellNeighbor;
-            cellNeighbor = getNeighbor(cell, 0, 1);
-            if (cellNeighbor != null) {
-                cell.addNeighbor(cellNeighbor);
-            }
-
-            cellNeighbor = getNeighbor(cell, 1, 0);
-            if (cellNeighbor != null) {
-                cell.addNeighbor(cellNeighbor);
-            }
-
-            cellNeighbor = getNeighbor(cell, 0, -1);
-            if (cellNeighbor != null) {
-                cell.addNeighbor(cellNeighbor);
-            }
-
-            cellNeighbor = getNeighbor(cell, -1, 0);
-            if (cellNeighbor != null) {
-                cell.addNeighbor(cellNeighbor);
-            }
-        }
-
-    }
-    */
 
     private void setupWalls() {
         //create boundary
@@ -158,43 +145,6 @@ public class MazeManager : MonoBehaviour {
             }
         }
 
-        /*
-        foreach (Cell cell in cells) {
-
-            Cell cellNeighbor;
-            cellNeighbor = getNeighbor(cell, 0, 1);
-            if (cellNeighbor != null) {
-                cell.addNeighbor(cellNeighbor);
-                if (getNeighborWall(cell, cellNeighbor) == null) {
-                    addWall(cell, cellNeighbor);
-                }
-            }
-
-            cellNeighbor = getNeighbor(cell, 1, 0);
-            if (cellNeighbor != null) {
-                cell.addNeighbor(cellNeighbor);
-                if (getNeighborWall(cell, cellNeighbor) == null) {
-                    addWall(cell, cellNeighbor);
-                }
-            }
-
-            cellNeighbor = getNeighbor(cell, 0, -1);
-            if (cellNeighbor != null) {
-                cell.addNeighbor(cellNeighbor);
-                if (getNeighborWall(cell, cellNeighbor) == null) {
-                    addWall(cell, cellNeighbor);
-                }
-            }
-
-            cellNeighbor = getNeighbor(cell, -1, 0);
-            if (cellNeighbor != null) {
-                cell.addNeighbor(cellNeighbor);
-                if (getNeighborWall(cell, cellNeighbor) == null) {
-                    addWall(cell, cellNeighbor);
-                }
-            }
-        }
-        */
 
     }
 
@@ -300,7 +250,7 @@ public class MazeManager : MonoBehaviour {
         mazeCells = new List<Cell>();
         frontierCells = new List<Cell>();
 
-        randomCell.markCell();
+        randomCell.markCellPrims();
         mazeCells.Add(randomCell);
 
 
@@ -313,8 +263,8 @@ public class MazeManager : MonoBehaviour {
             //            Cell cellRandomFrontier = getFrontierCells()[Random.Range(0, getFrontierCells().Count)];
             Cell cellRandomFrontier = cellsFrontier[Random.Range(0, cellsFrontier.Count)];
             Cell cellNeighborInMaze = cellRandomFrontier.getNeighborInMaze();
-            makePassage(cellRandomFrontier, cellNeighborInMaze);
-            cellRandomFrontier.markCell();
+            makePassagePrims(cellRandomFrontier, cellNeighborInMaze);
+            cellRandomFrontier.markCellPrims();
 
             soundeffects.soundBeep.pitch = 0.5f * (1 + Random.Range(0, 4));
             soundeffects.soundBeep.Play();
@@ -325,7 +275,7 @@ public class MazeManager : MonoBehaviour {
 
     }
 
-    private void makePassage(Cell in_cell1, Cell in_cell2) {
+    private void makePassagePrims(Cell in_cell1, Cell in_cell2) {
         Wall wallToDelete = null;
         foreach (Wall wall in walls) {
             if (wall.connectedCells.Contains(in_cell1) && wall.connectedCells.Contains(in_cell2)) {
@@ -347,5 +297,113 @@ public class MazeManager : MonoBehaviour {
         }
 
     }
+
+
+
+    private void createMazeKruskals() {
+        kruskalsWalls = new List<Wall>();
+
+        foreach (Wall wall in walls) {
+            kruskalsWalls.Insert(Random.Range(0, kruskalsWalls.Count), wall);
+        }
+
+        int iID = 0;
+        foreach (Cell cell in cells) {
+            //cell.iKruskalID = iID;
+            cell.setIDKruskals(iID);
+            iID++;
+        }
+
+    }
+
+    private void createMazeKruskalsSelectWall() {
+        if (kruskalsWalls.Count > 0) {
+            Wall selectedWall = kruskalsWalls[0];
+            kruskalsWalls.RemoveAt(0);
+
+            //I just used IDs to keep track of groups;  Could have used tree structures instead
+            int iKruskalID1 = selectedWall.connectedCells[0].iKruskalID;
+            int iKruskalID2 = selectedWall.connectedCells[1].iKruskalID;
+
+            selectedWall.setHighlighted(true);
+
+            bool isUsingSimpleImplementation = false;
+
+
+            if (isUsingSimpleImplementation) {
+                //simple implementation
+
+                if (iKruskalID1 != iKruskalID2) {
+                    foreach (Cell cell in cells) {
+
+                        if (cell.iKruskalID == iKruskalID2) {
+                            cell.setIDKruskals(iKruskalID1);
+                        }
+                    }
+
+                    Destroy(selectedWall.gameObject);
+                    soundeffects.soundBeep.pitch = 0.5f * (1 + Random.Range(0, 4));
+                    soundeffects.soundBeep.Play();
+
+                } else {
+                    soundeffects.soundBloop.Play();
+
+                }
+            } else {
+                //calculate the majority and minority of cells in joined areas
+                //reduces amount of flashing between colors
+                if (iKruskalID1 != iKruskalID2) {
+
+                    int iKruskalID1Count = 0;
+                    int iKruskalID2Count = 0;
+                    foreach (Cell cell in cells) {
+                        if (cell.iKruskalID == iKruskalID1) {
+                            iKruskalID1Count++;
+                        } else if (cell.iKruskalID == iKruskalID2) {
+                            iKruskalID2Count++;
+                        }
+                    }
+
+                    int iKruskalIDOld;
+                    int iKruskalIDNew;
+
+                    if (iKruskalID1Count > iKruskalID2Count) {
+                        iKruskalIDOld = iKruskalID2;
+                        iKruskalIDNew = iKruskalID1;
+                    } else {
+                        iKruskalIDOld = iKruskalID1;
+                        iKruskalIDNew = iKruskalID2;
+                    }
+
+
+                    foreach (Cell cell in cells) {
+                        if (cell.iKruskalID == iKruskalIDOld) {
+                            cell.setIDKruskals(iKruskalIDNew);
+                        }
+                    }
+
+                    Destroy(selectedWall.gameObject);
+                    soundeffects.soundBeep.pitch = 0.5f * (1 + Random.Range(0, 4));
+                    soundeffects.soundBeep.Play();
+
+
+                } else {
+                    soundeffects.soundBloop.Play();
+
+                }
+
+
+
+            }
+
+        } else {
+            isFinished = true;
+            soundeffects.soundFinished.Play();
+        }
+
+
+    }
+
+
 
 }

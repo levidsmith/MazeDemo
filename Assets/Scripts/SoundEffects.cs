@@ -7,6 +7,7 @@ public class SoundEffects : MonoBehaviour {
 
     public AudioSource soundBeep;
     public AudioSource soundFinished;
+    public AudioSource soundBloop;
 
     void Start() {
         

@@ -46,6 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   connectedCells: []
+  model: {fileID: 8831444132007499002}
 --- !u!65 &9013976633040687623
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -124,6 +125,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a7c1ea5526de0b74c8f9c4ff71fd847e, type: 3}
+--- !u!1 &8831444132007499002 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: a7c1ea5526de0b74c8f9c4ff71fd847e, type: 3}
+  m_PrefabInstance: {fileID: 8525030919936862635}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8197755326719823424 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: a7c1ea5526de0b74c8f9c4ff71fd847e, type: 3}

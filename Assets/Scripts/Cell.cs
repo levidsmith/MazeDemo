@@ -13,8 +13,10 @@ public class Cell : MonoBehaviour {
     public GameObject WallPrefab;
     public MazeManager mazemanager;
 
-    public bool isInMaze;
-    public bool isFrontier;
+    public bool isInMaze;  //for Prim's
+    public bool isFrontier;  //for Prim's
+
+    public int iKruskalID;  //for Kruskal's
 
     public GameObject model;
 
@@ -34,24 +36,6 @@ public class Cell : MonoBehaviour {
 
     }
 
-
-    /*
-    public void addNeighbor(Cell in_cell) {
-        if (cellNeighbors == null) {
-            cellNeighbors = new List<Cell>();
-        }
-        
-        cellNeighbors.Add(in_cell);
-
-        Wall wall = Instantiate(WallPrefab, new Vector3(iCol + 0.5f * in_col, 0f, iRow + 0.5f * in_row), Quaternion.Euler(0f, in_rot, 0f)).GetComponent<Wall>();
-
-        wall.connectedCells = new List<Cell>();
-        wall.connectedCells.Add(this);
-        wall.connectedCells.Add(in_cell);
-
-    }
-    */
-
     public List<Cell> getNeighbors() {
         List<Cell> cellNeighbors = mazemanager.getCellNeighbors(this);
 
@@ -65,7 +49,6 @@ public class Cell : MonoBehaviour {
 
         foreach (Cell cell in getNeighbors()) {
             if (cell.isInMaze) {
-                //cellReturn = cell;
                 cellNeighborsInMaze.Add(cell);
             }
         }
@@ -77,7 +60,7 @@ public class Cell : MonoBehaviour {
         return cellReturn;
     }
 
-    public void markCell() {
+    public void markCellPrims() {
         isInMaze = true;
         isFrontier = false;
 
@@ -89,6 +72,13 @@ public class Cell : MonoBehaviour {
                 cell.model.GetComponent<Renderer>().material.color = new Color(1f, 0.5f, 0.5f);
             }
         }
+    }
+
+    public void setIDKruskals(int in_iKruskalID) {
+        iKruskalID = in_iKruskalID;
+
+        model.GetComponent<Renderer>().material.color = Color.HSVToRGB((float)iKruskalID / (float)(MazeManager.MAZE_ROWS * MazeManager.MAZE_COLS), 1f, 1f);
+
     }
 
     public override string ToString() {
